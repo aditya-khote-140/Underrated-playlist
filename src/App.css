@@ -563,6 +563,34 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
+.bottom-player__art-ring {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  border-radius: 50% !important;
+  border: 2px solid rgba(255, 255, 255, 0.55) !important;
+
+  pointer-events: none !important;
+}
+
+.bottom-player__art-ring::after {
+  content: '' !important;
+  position: absolute !important;
+  right: -1px !important;
+  bottom: -1px !important;
+
+  width: 6px !important;
+  height: 6px !important;
+
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
 
 /* =========================================================
    SONG INFORMATION
@@ -810,87 +838,6 @@
 
 
 /* =========================================================
-   VOLUME (nested inside controls; hidden unless present in markup)
-   ========================================================= */
-
-.bottom-player__volume {
-  display: flex !important;
-  align-items: center !important;
-
-  gap: 6px !important;
-
-  flex-shrink: 0 !important;
-
-  padding-left: 10px !important;
-  margin-left: 4px !important;
-
-  border-left: 1px solid rgba(255, 255, 255, 0.18) !important;
-}
-
-.bottom-player__volume-icon {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  width: 18px !important;
-  height: 18px !important;
-
-  color: rgba(255, 255, 255, 0.75) !important;
-
-  flex-shrink: 0 !important;
-}
-
-.bottom-player__volume-slider {
-  -webkit-appearance: none !important;
-  appearance: none !important;
-
-  width: 70px !important;
-  height: 4px !important;
-
-  margin: 0 !important;
-  padding: 0 !important;
-
-  border: 0 !important;
-  outline: 0 !important;
-  border-radius: 999px !important;
-
-  background: linear-gradient(
-    to right,
-    #fff 0%,
-    #fff var(--volume, 70%),
-    rgba(255, 255, 255, 0.25) var(--volume, 70%),
-    rgba(255, 255, 255, 0.25) 100%
-  ) !important;
-
-  cursor: pointer !important;
-}
-
-.bottom-player__volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none !important;
-
-  width: 10px !important;
-  height: 10px !important;
-
-  border: 0 !important;
-  border-radius: 50% !important;
-
-  background: #fff !important;
-
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
-}
-
-.bottom-player__volume-slider::-moz-range-thumb {
-  width: 10px !important;
-  height: 10px !important;
-
-  border: 0 !important;
-  border-radius: 50% !important;
-
-  background: #fff !important;
-}
-
-
-/* =========================================================
    MOBILE
    ========================================================= */
 
@@ -943,11 +890,6 @@
 
   .bottom-player__controls {
     gap: 2px !important;
-  }
-
-
-  .bottom-player__volume {
-    display: none !important;
   }
 
 
