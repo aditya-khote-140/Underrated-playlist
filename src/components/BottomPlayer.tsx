@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { MusicPlayerState, Track } from '../types/youtube'
 import { formatTime } from '../utils/playlist'
 
@@ -22,11 +23,24 @@ export function BottomPlayer({
   onPrev,
   onSeek,
 }: Props) {
+  const [volume, setVolume] = useState(100)
   const progress = state.duration > 0 ? (state.currentTime / state.duration) * 100 : 0
 
   const handleProgress = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pct = Number(e.target.value)
     onSeek((pct / 100) * state.duration)
+  }
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextVolume = Number(e.target.value)
+    setVolume(nextVolume)
+    window.dispatchEvent(new CustomEvent('youtube-volume-change', { detail: nextVolume }))
+  }
+
+  const handleMute = () => {
+    const nextVolume = volume === 0 ? 100 : 0
+    setVolume(nextVolume)
+    window.dispatchEvent(new CustomEvent('youtube-volume-change', { detail: nextVolume }))
   }
 
   if (loading) {
@@ -52,22 +66,9 @@ export function BottomPlayer({
       <div className="bottom-player__meta">
         <p className="bottom-player__title">{currentTrack?.title ?? 'Loading...'}</p>
         <p className="bottom-player__artist">{currentTrack?.artist ?? ''}</p>
-        <div className="bottom-player__progress-wrap">
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={0.1}
-            value={progress}
-            onChange={handleProgress}
-            className="bottom-player__progress"
-            aria-label="Seek"
-            style={{ '--progress': `${progress}%` } as React.CSSProperties}
-          />
-          <span className="bottom-player__time">
-            {formatTime(state.currentTime)} / {formatTime(state.duration)}
-          </span>
-        </div>
+        <span className="bottom-player__time">
+          {formatTime(state.currentTime)} / {formatTime(state.duration)}
+        </span>
       </div>
 
       <div className="bottom-player__controls">
@@ -76,6 +77,7 @@ export function BottomPlayer({
             <path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z" />
           </svg>
         </button>
+
         <button
           type="button"
           className="bottom-player__btn bottom-player__btn--play"
@@ -92,11 +94,55 @@ export function BottomPlayer({
             </svg>
           )}
         </button>
+
         <button type="button" className="bottom-player__btn" onClick={onNext} aria-label="Next">
           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-            <path d="M6 18l8.5-6L6 6v12zm2-6v0zm3.5 0L18 12V6l-6.5 6zM16 18h2V6h-2v12z" />
+            <path d="M6 18l8.5-6L6 6v12zm3.5-6L18 6v12l-8.5-6zM16 6h2v12h-2V6z" />
           </svg>
         </button>
+
+        <div className="bottom-player__volume">
+          <button
+            type="button"
+            className="bottom-player__btn bottom-player__volume-btn"
+            onClick={handleMute}
+            aria-label={volume === 0 ? 'Unmute' : 'Mute'}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              {volume === 0 ? (
+                <path d="M4 9v6h4l5 4V5L8 9H4l-4 3 4 3v-6zm11 1 4-4 1.5 1.5-4 4 4 4L19 17l-4-4-4 4-1.5-1.5 4-4-4-4L11 6.5l4 3.5z" />
+              ) : (
+                <path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3c0-1.77-1-3.29-2.5-4.03v8.06c1.5-.74 2.5-2.26 2.5-4.03zm2.5 0c0 2.77-1.5 5.18-3.73 6.47v1.7C18.11 18.8 20.5 15.9 20.5 12s-2.39-6.8-5.23-8.17v1.7C18.5 6.82 20 9.23 20 12z" />
+              )}
+            </svg>
+          </button>
+
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={volume}
+            onChange={handleVolumeChange}
+            className="bottom-player__volume-slider"
+            style={{ '--volume': `${volume}%` } as React.CSSProperties}
+            aria-label="Volume"
+          />
+        </div>
+      </div>
+
+      <div className="bottom-player__progress-wrap">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={0.1}
+          value={progress}
+          onChange={handleProgress}
+          className="bottom-player__progress"
+          style={{ '--progress': `${progress}%` } as React.CSSProperties}
+          aria-label="Seek through song"
+        />
       </div>
     </div>
   )

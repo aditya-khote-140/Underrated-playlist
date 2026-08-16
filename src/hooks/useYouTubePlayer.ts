@@ -65,14 +65,15 @@ export function useYouTubePlayer(containerId: string) {
   }, [stopTick])
 
   const loadPlaylistMeta = useCallback(async (videoIds: string[]) => {
-    const meta = await Promise.all(
-      videoIds.map(async (id) => {
-        const { title, artist, thumbnail } = await fetchTrackMeta(id)
-        return { id, title, artist, thumbnail }
-      }),
-    )
-    setTracks(meta)
-  }, [])
+  const meta = await Promise.all(
+    videoIds.map(async (id) => {
+      const { title, artist, thumbnail } = await fetchTrackMeta(id)
+      return { id, title, artist, thumbnail }
+    }),
+  )
+
+  setTracks(meta)
+}, [])
 
   const loadPlaylist = useCallback(
     async (playlistId: string) => {
@@ -91,10 +92,10 @@ export function useYouTubePlayer(containerId: string) {
 
         await new Promise<void>((resolve, reject) => {
           playerRef.current = new window.YT.Player(containerId, {
-            height: '0',
-            width: '0',
+            height: "0",
+            width: "0",
             playerVars: {
-              listType: 'playlist',
+              listType: "playlist",
               list: playlistId,
               autoplay: 0,
               controls: 0,
@@ -103,37 +104,41 @@ export function useYouTubePlayer(containerId: string) {
             },
             events: {
               onReady: (event) => {
-                event.target.setVolume(70)
-                const ids = event.target.getPlaylist() ?? []
+                event.target.setVolume(70);
+                const ids = event.target.getPlaylist() ?? [];
                 if (ids.length === 0) {
-                  reject(new Error('Playlist is empty or unavailable'))
-                  return
+                  reject(new Error("Playlist is empty or unavailable"));
+                  return;
                 }
-                void loadPlaylistMeta(ids)
+                void loadPlaylistMeta(ids);
                 setState((prev) => ({
                   ...prev,
                   isReady: true,
                   volume: 70,
                   currentIndex: event.target.getPlaylistIndex(),
-                }))
-                resolve()
+                }));
+                resolve();
               },
               onStateChange: (event) => {
-                const playing = event.data === YTPlayerState.PLAYING
+                const playing = event.data === YTPlayerState.PLAYING;
                 setState((prev) => ({
                   ...prev,
                   isPlaying: playing,
                   currentIndex: event.target.getPlaylistIndex(),
-                }))
-                if (playing) startTick()
-                else stopTick()
+                }));
+                if (playing) startTick();
+                else stopTick();
               },
               onError: () => {
-                reject(new Error('Could not load playlist. Check the URL and try again.'))
+                reject(
+                  new Error(
+                    "Could not load playlist. Check the URL and try again.",
+                  ),
+                );
               },
             },
-          })
-        })
+          });
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load playlist')
       } finally {
