@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BottomPlayer } from "./components/BottomPlayer";
 import { PlaylistDrawer } from "./components/PlaylistDrawer";
 import { TopBar } from "./components/TopBar";
-import { DEFAULT_PLAYLIST_ID, DEFAULT_PLAYLIST_URL } from "./config/playlist";
+import { DEFAULT_PLAYLIST_ID, DEFAULT_PLAYLIST_URL } from "./config/playlist-config";
 import { useYouTubePlayer } from "./hooks/useYouTubePlayer";
 import "./App.css";
 
