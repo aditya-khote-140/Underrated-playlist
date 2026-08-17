@@ -43,7 +43,7 @@ export function useYouTubePlayer(containerId: string) {
 
   const stopTick = useCallback(() => {
     if (tickRef.current !== null) {
-      cancelAnimationFrame(tickRef.current);
+      clearInterval(tickRef.current);
       tickRef.current = null;
     }
   }, []);
@@ -59,9 +59,9 @@ export function useYouTubePlayer(containerId: string) {
           duration: player.getDuration() || prev.duration,
         }));
       }
-      tickRef.current = requestAnimationFrame(tick);
     };
-    tickRef.current = requestAnimationFrame(tick);
+    tick();
+    tickRef.current = window.setInterval(tick, 500);
   }, [stopTick]);
 
   const loadPlaylistMeta = useCallback(async (videoIds: string[]) => {
@@ -100,8 +100,8 @@ export function useYouTubePlayer(containerId: string) {
 
         await new Promise<void>((resolve, reject) => {
           playerRef.current = new window.YT.Player(containerId, {
-            height: "0",
-            width: "0",
+            height: "1",
+            width: "1",
             playerVars:
               isMix && seedVideoId
                 ? {

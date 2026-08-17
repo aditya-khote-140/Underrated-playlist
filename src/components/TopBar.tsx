@@ -27,16 +27,7 @@ export function TopBar({
       <div className="top-left">
         <p className="top-left__time">{time}</p>
 
-        <p className="top-left__km">
-          <svg
-            className="top-left__diamond"
-            viewBox="0 0 12 12"
-            width="10"
-            height="10"
-          >
-            <path d="M6 0 L12 6 L6 12 L0 6 Z" fill="currentColor" />
-          </svg>
-        </p>
+        
 
         <p className="top-left__listeners">
           <span className="top-left__live-dot" />
