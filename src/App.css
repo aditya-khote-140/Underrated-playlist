@@ -40,13 +40,11 @@
 }
 
 .yt-player-hidden {
-  position: fixed;
-  top: -9999px;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
+  position: absolute;
+  width: 0;
+  height: 0;
   overflow: hidden;
-  opacity: 0.01;
+  opacity: 0;
   pointer-events: none;
 }
 
