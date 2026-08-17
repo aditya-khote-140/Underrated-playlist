@@ -1,0 +1,11 @@
+diff --git a/src/config/playlist.ts b/src/config/playlist.ts
+index 758b901..00f9ad7 100644
+--- a/src/config/playlist.ts
++++ b/src/config/playlist.ts
+@@ -1,4 +1,4 @@
+-export const DEFAULT_PLAYLIST_ID = 'PLfdfb0LKtKKs8IcyIvtsf_FfmJU-1pbI1'
++export const DEFAULT_PLAYLIST_ID = 'RDebZj_nrmH-c'
+ 
+ export const DEFAULT_PLAYLIST_URL =
+-  'https://www.youtube.com/watch?v=cBGDDBHN22U&list=PLfdfb0LKtKKs8IcyIvtsf_FfmJU-1pbI1'
++  'https://www.youtube.com/watch?v=ebZj_nrmH-c&list=RDebZj_nrmH-c&index=1'

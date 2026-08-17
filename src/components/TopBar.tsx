@@ -1,5 +1,4 @@
 import { useLiveClock } from "../hooks/useLiveClock";
-import { useKmDriven } from "../hooks/useKmDriven";
 import { useLiveListeners } from "../hooks/useLiveListeners";
 
 type Props = {
@@ -20,7 +19,6 @@ export function TopBar({
   onShare,
 }: Props) {
   const { time } = useLiveClock();
-  const km = useKmDriven(isPlaying);
   const listeners = useLiveListeners(isPlaying);
 
   return (
@@ -38,7 +36,6 @@ export function TopBar({
           >
             <path d="M6 0 L12 6 L6 12 L0 6 Z" fill="currentColor" />
           </svg>
-          {Math.floor(km)} km driven
         </p>
 
         <p className="top-left__listeners">
@@ -46,9 +43,6 @@ export function TopBar({
           {listeners} live sun rahe hain
         </p>
       </div>
-
-      {/* Hindi Playlist Title */}
-      <div className="playlist-title">ओ जी प्लेलिस्ट</div>
 
       {/* Top Center */}
       <div className="top-center">

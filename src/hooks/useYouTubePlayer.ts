@@ -1,26 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { MusicPlayerState, Track, YTPlayer } from '../types/youtube'
-import { YTPlayerState } from '../types/youtube'
-import { fetchTrackMeta } from '../utils/playlist'
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { MusicPlayerState, Track, YTPlayer } from "../types/youtube";
+import { YTPlayerState } from "../types/youtube";
+import { fetchTrackMeta } from "../utils/playlist";
 
-const YT_SCRIPT_ID = 'youtube-iframe-api'
+const YT_SCRIPT_ID = "youtube-iframe-api";
 
 function loadYouTubeScript(): Promise<void> {
-  if (window.YT?.Player) return Promise.resolve()
+  if (window.YT?.Player) return Promise.resolve();
 
   return new Promise((resolve) => {
-    const existing = document.getElementById(YT_SCRIPT_ID)
+    const existing = document.getElementById(YT_SCRIPT_ID);
     if (existing) {
-      window.onYouTubeIframeAPIReady = () => resolve()
-      return
+      window.onYouTubeIframeAPIReady = () => resolve();
+      return;
     }
 
-    window.onYouTubeIframeAPIReady = () => resolve()
-    const script = document.createElement('script')
-    script.id = YT_SCRIPT_ID
-    script.src = 'https://www.youtube.com/iframe_api'
-    document.head.appendChild(script)
-  })
+    window.onYouTubeIframeAPIReady = () => resolve();
+    const script = document.createElement("script");
+    script.id = YT_SCRIPT_ID;
+    script.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(script);
+  });
 }
 
 const initialState: MusicPlayerState = {
@@ -31,91 +31,116 @@ const initialState: MusicPlayerState = {
   currentIndex: 0,
   volume: 70,
   isMuted: false,
-}
+};
 
 export function useYouTubePlayer(containerId: string) {
-  const playerRef = useRef<YTPlayer | null>(null)
-  const [state, setState] = useState<MusicPlayerState>(initialState)
-  const [tracks, setTracks] = useState<Track[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const tickRef = useRef<number | null>(null)
+  const playerRef = useRef<YTPlayer | null>(null);
+  const [state, setState] = useState<MusicPlayerState>(initialState);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const tickRef = useRef<number | null>(null);
 
   const stopTick = useCallback(() => {
     if (tickRef.current !== null) {
-      cancelAnimationFrame(tickRef.current)
-      tickRef.current = null
+      cancelAnimationFrame(tickRef.current);
+      tickRef.current = null;
     }
-  }, [])
+  }, []);
 
   const startTick = useCallback(() => {
-    stopTick()
+    stopTick();
     const tick = () => {
-      const player = playerRef.current
+      const player = playerRef.current;
       if (player?.getCurrentTime) {
         setState((prev) => ({
           ...prev,
           currentTime: player.getCurrentTime(),
           duration: player.getDuration() || prev.duration,
-        }))
+        }));
       }
-      tickRef.current = requestAnimationFrame(tick)
-    }
-    tickRef.current = requestAnimationFrame(tick)
-  }, [stopTick])
+      tickRef.current = requestAnimationFrame(tick);
+    };
+    tickRef.current = requestAnimationFrame(tick);
+  }, [stopTick]);
 
   const loadPlaylistMeta = useCallback(async (videoIds: string[]) => {
-  const meta = await Promise.all(
-    videoIds.map(async (id) => {
-      const { title, artist, thumbnail } = await fetchTrackMeta(id)
-      return { id, title, artist, thumbnail }
-    }),
-  )
+    const meta = await Promise.all(
+      videoIds.map(async (id) => {
+        const { title, artist, thumbnail } = await fetchTrackMeta(id);
+        return { id, title, artist, thumbnail };
+      }),
+    );
 
-  setTracks(meta)
-}, [])
+    setTracks(meta);
+  }, []);
 
   const loadPlaylist = useCallback(
     async (playlistId: string) => {
-      setLoading(true)
-      setError(null)
-      setTracks([])
-      setState(initialState)
+      setLoading(true);
+      setError(null);
+      setTracks([]);
+      setState(initialState);
+
+      // YouTube "Mix" / Radio playlists (id starts with "RD") are not real
+      // saved playlists, so loading them with listType: "playlist" often
+      // fails outright. They embed the seed video's id right after "RD",
+      // so instead we load that video directly and pass `list` as a hint —
+      // YouTube will still queue up the rest of the mix behind the scenes.
+      const isMix = playlistId.startsWith("RD");
+      const seedVideoId = isMix ? playlistId.slice(2) : undefined;
 
       try {
-        await loadYouTubeScript()
+        await loadYouTubeScript();
 
         if (playerRef.current) {
-          playerRef.current.destroy()
-          playerRef.current = null
+          playerRef.current.destroy();
+          playerRef.current = null;
         }
 
         await new Promise<void>((resolve, reject) => {
           playerRef.current = new window.YT.Player(containerId, {
             height: "0",
             width: "0",
-            playerVars: {
-              listType: "playlist",
-              list: playlistId,
-              autoplay: 0,
-              controls: 0,
-              modestbranding: 1,
-              rel: 0,
-            },
+            playerVars:
+              isMix && seedVideoId
+                ? {
+                    videoId: seedVideoId,
+                    list: playlistId,
+                    autoplay: 0,
+                    controls: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                  }
+                : {
+                    listType: "playlist",
+                    list: playlistId,
+                    autoplay: 0,
+                    controls: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                  },
             events: {
               onReady: (event) => {
                 event.target.setVolume(70);
-                const ids = event.target.getPlaylist() ?? [];
-                if (ids.length === 0) {
+                let ids = event.target.getPlaylist() ?? [];
+
+                // Mixes sometimes don't expose a full playlist array even
+                // when the seed video loaded fine — fall back to just that
+                // one video instead of erroring the whole player out.
+                if (ids.length === 0 && seedVideoId) {
+                  ids = [seedVideoId];
+                } else if (ids.length === 0) {
                   reject(new Error("Playlist is empty or unavailable"));
                   return;
                 }
+
                 void loadPlaylistMeta(ids);
                 setState((prev) => ({
                   ...prev,
                   isReady: true,
                   volume: 70,
-                  currentIndex: event.target.getPlaylistIndex(),
+                  currentIndex: Math.max(event.target.getPlaylistIndex(), 0),
                 }));
                 resolve();
               },
@@ -124,7 +149,7 @@ export function useYouTubePlayer(containerId: string) {
                 setState((prev) => ({
                   ...prev,
                   isPlaying: playing,
-                  currentIndex: event.target.getPlaylistIndex(),
+                  currentIndex: Math.max(event.target.getPlaylistIndex(), 0),
                 }));
                 if (playing) startTick();
                 else stopTick();
@@ -140,48 +165,50 @@ export function useYouTubePlayer(containerId: string) {
           });
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load playlist')
+        setError(
+          err instanceof Error ? err.message : "Failed to load playlist",
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     },
     [containerId, loadPlaylistMeta, startTick, stopTick],
-  )
+  );
 
-  const play = useCallback(() => playerRef.current?.playVideo(), [])
-  const pause = useCallback(() => playerRef.current?.pauseVideo(), [])
-  const next = useCallback(() => playerRef.current?.nextVideo(), [])
-  const prev = useCallback(() => playerRef.current?.previousVideo(), [])
+  const play = useCallback(() => playerRef.current?.playVideo(), []);
+  const pause = useCallback(() => playerRef.current?.pauseVideo(), []);
+  const next = useCallback(() => playerRef.current?.nextVideo(), []);
+  const prev = useCallback(() => playerRef.current?.previousVideo(), []);
   const seek = useCallback((seconds: number) => {
-    playerRef.current?.seekTo(seconds, true)
-  }, [])
+    playerRef.current?.seekTo(seconds, true);
+  }, []);
   const setVolume = useCallback((volume: number) => {
-    playerRef.current?.setVolume(volume)
-    setState((prev) => ({ ...prev, volume, isMuted: volume === 0 }))
-  }, [])
+    playerRef.current?.setVolume(volume);
+    setState((prev) => ({ ...prev, volume, isMuted: volume === 0 }));
+  }, []);
   const toggleMute = useCallback(() => {
-    const player = playerRef.current
-    if (!player) return
+    const player = playerRef.current;
+    if (!player) return;
     if (player.isMuted()) {
-      player.unMute()
-      setState((prev) => ({ ...prev, isMuted: false }))
+      player.unMute();
+      setState((prev) => ({ ...prev, isMuted: false }));
     } else {
-      player.mute()
-      setState((prev) => ({ ...prev, isMuted: true }))
+      player.mute();
+      setState((prev) => ({ ...prev, isMuted: true }));
     }
-  }, [])
+  }, []);
   const playAt = useCallback((index: number) => {
-    playerRef.current?.playVideoAt(index)
-  }, [])
+    playerRef.current?.playVideoAt(index);
+  }, []);
 
   useEffect(() => {
     return () => {
-      stopTick()
-      playerRef.current?.destroy()
-    }
-  }, [stopTick])
+      stopTick();
+      playerRef.current?.destroy();
+    };
+  }, [stopTick]);
 
-  const currentTrack = tracks[state.currentIndex] ?? null
+  const currentTrack = tracks[state.currentIndex] ?? null;
 
   return {
     state,
@@ -198,5 +225,5 @@ export function useYouTubePlayer(containerId: string) {
     setVolume,
     toggleMute,
     playAt,
-  }
+  };
 }
