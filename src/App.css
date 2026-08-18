@@ -105,29 +105,16 @@
 #yt-player,
 .yt-player-hidden {
   position: fixed !important;
-  width: 320px !important;
-  height: 180px !important;
-  left: -10000px !important;
-  top: -10000px !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  border: 0 !important;
-  z-index: -1 !important;
-}
-
-.yt-player-hidden {
-  position: fixed !important;
-  width: 320px !important;
-  height: 180px !important;
-
-  left: -1000px !important;
-  top: -1000px !important;
-
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 200px !important;
+  height: 200px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
   opacity: 0.01 !important;
   pointer-events: none !important;
-
   border: 0 !important;
-  overflow: hidden !important;
   z-index: -1 !important;
 }
 
