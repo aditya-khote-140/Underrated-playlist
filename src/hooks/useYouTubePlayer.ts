@@ -100,8 +100,8 @@ export function useYouTubePlayer(containerId: string) {
 
         await new Promise<void>((resolve, reject) => {
           playerRef.current = new window.YT.Player(containerId, {
-            height: "0",
-            width: "0",
+            height: "180",
+            width: "320",
             playerVars:
               isMix && seedVideoId
                 ? {

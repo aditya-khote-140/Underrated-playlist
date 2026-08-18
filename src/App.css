@@ -39,14 +39,6 @@
   font-size: 0.85rem;
 }
 
-.yt-player-hidden {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Top-left: clock + km + listeners */
 .top-left {
@@ -104,6 +96,39 @@
   50% {
     opacity: 0.5;
   }
+}
+
+/* YouTube audio player
+   Keep the iframe alive and rendered.
+   Do NOT use display:none or visibility:hidden.
+*/
+#yt-player,
+.yt-player-hidden {
+  position: fixed !important;
+  width: 320px !important;
+  height: 180px !important;
+  left: -10000px !important;
+  top: -10000px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border: 0 !important;
+  z-index: -1 !important;
+}
+
+.yt-player-hidden {
+  position: fixed !important;
+  width: 320px !important;
+  height: 180px !important;
+
+  left: -1000px !important;
+  top: -1000px !important;
+
+  opacity: 0.01 !important;
+  pointer-events: none !important;
+
+  border: 0 !important;
+  overflow: hidden !important;
+  z-index: -1 !important;
 }
 
 /* Top-center toolbar */
